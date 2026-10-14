@@ -1,164 +1,167 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import time
 
 # --- CONFIGURATION PAGE ---
 st.set_page_config(
-    page_title="Emala Quantum & Games Core",
-    page_icon="⚡",
+    page_title="Emala Launcher Pro",
+    page_icon="🎮",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# --- STYLE CSS CYBERPUNK / HIGH-TECH ---
+# --- STYLE CSS EPIC GAMES / UNREAL ENGINE ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
     html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-    .stApp { background-color: #05070b; color: #00ffcc; }
+    .stApp { background-color: #0e0e10; color: #efeff1; }
     
-    h1, h2, h3 { font-family: 'Orbitron', sans-serif; text-transform: uppercase; color: #00ffcc; text-shadow: 0 0 10px rgba(0,255,204,0.3); }
-    
-    .metric-card {
-        background: rgba(13, 20, 35, 0.8);
-        border: 1px solid #00ffcc;
+    /* Style des cartes de projets */
+    .project-card {
+        background-color: #1f1f23;
+        border: 1px solid #2f2f35;
         border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 0 15px rgba(0,255,204,0.1);
+        padding: 16px;
+        margin-bottom: 12px;
+        transition: border-color 0.2s ease;
+    }
+    .project-card:hover {
+        border-color: #0078f2;
     }
     
-    [data-testid="stSidebar"] { background-color: #080c14; border-right: 1px solid #1a233a; }
+    /* Panneau Social latéral */
+    .social-panel {
+        background-color: #18181b;
+        border: 1px solid #27272a;
+        border-radius: 10px;
+        padding: 15px;
+    }
+    
+    /* Header supérieur */
+    .top-nav {
+        background-color: #18181b;
+        padding: 12px 20px;
+        border-bottom: 1px solid #27272a;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- SESSION STATE ---
-if "gpu_power" not in st.session_state:
-    st.session_state.gpu_power = 100  # Puissance de calcul de base en TFLOPS
+# --- GESTION DES PROJETS EN SESSION ---
+if "projets_list" not in st.session_state:
+    st.session_state.projets_list = [
+        {"nom": "Cyber-Nvidia Core 2077", "moteur": "Emala Engine 5.4", "statut": "Prêt"},
+        {"nom": "Simulation Quantique GPU", "moteur": "DeepTech SDK", "statut": "Compilé"}
+    ]
 
-if "library" not in st.session_state:
-    st.session_state.library = ["Cyber-Engine Core 2077"]
+# --- NAVIGATION SUPÉRIEURE (STYLE EPIC) ---
+t1, t2, t3, t4 = st.columns([1, 1, 1, 5])
+with t1:
+    st.markdown("### 🛒 Boutique")
+with t2:
+    st.markdown("### 📚 Bibliothèque")
+with t3:
+    st.markdown("### 🚀 **Développer**")
+with t4:
+    st.caption("Emala Launcher v2.6.0 • Connecté en mode Administrateur")
 
-# --- SIDEBAR ---
-with st.sidebar:
-    st.title("⚡ EMALA KERNEL")
-    st.caption("Architecture Matérielle & Gaming")
-    
-    st.divider()
-    menu = st.radio(
-        "NAVIGATION SYSTÈME",
-        ["Labo GPU & Ray Tracing", "Moteur de Jeu & Physique", "Store Avancé", "Cloud Node Manager"]
-    )
+st.divider()
 
-# ==========================================
-# 1. LABO GPU & RAY TRACING (MATHS & HARDWARE)
-# ==========================================
-if menu == "Labo GPU & Ray Tracing":
-    st.title("🔬 Laboratoire de Calcul Graphique (Ray Tracing)")
-    st.markdown("Simulateur de performance de calcul parallèle par tenseurs (Algèbre Linéaire GPU).")
+# --- LAYOUT PRINCIPAL : ESPACE PROJET (GAUCHE) & PANNEAU SOCIAL (DROITE) ---
+col_workspace, col_social = st.columns([3, 1])
+
+with col_workspace:
+    # Sous-onglets de la section Développer (Outils, Projets, Fab, Apprendre)
+    sub_tab = st.radio("Navigation Développeur", ["Outils", "Projets", "Fab", "Apprendre"], horizontal=True, label_visibility="collapsed")
     
-    st.divider()
-    
-    col1, col2 = st.columns([2, 1])
-    
-    with col1:
-        st.subheader("Simulation de Lancer de Rayons (Path Tracing)")
-        resolution = st.selectbox("Résolution de rendu", ["1080p Full HD", "1440p QHD", "4K Ultra HD", "8K Neural Res"])
-        rayons_millions = st.slider("Rayons lumineux par seconde (Millions)", 10, 500, 150)
+    if sub_tab == "Projets":
+        st.markdown("## Projets Emala Engine")
         
-        if st.button("Lancer le Benchmark GPU", type="primary"):
-            with st.status("Exécution des calculs matriciels sur le processeur...", expanded=True) as status:
-                st.write("Allocation des registres CUDA virtuels...")
-                time.sleep(0.6)
-                st.write("Calcul des vecteurs de réflexion lumineuse (Produits scalaires)...")
+        # Barre de recherche et filtres
+        c_search, c_filter = st.columns([3, 1])
+        with c_search:
+            recherche = st.text_input("Recherche", placeholder="Chercher dans les projets...", label_visibility="collapsed")
+        with c_filter:
+            st.button("⚙️ Filtrer et trier", use_container_width=True)
+            
+        st.write("")
+        
+        # Formulaire de création de nouveau projet
+        with st.expander("➕ Créer un nouveau projet Deep-Tech"):
+            nouveau_nom = st.text_input("Nom du nouveau projet", value="MonMoteurGraphique")
+            if st.button("Initialiser le workspace"):
+                st.session_state.projets_list.append({"nom": nouveau_nom, "moteur": "Emala Engine 5.4", "statut": "Nouveau"})
+                st.success(f"Projet {nouveau_nom} initialisé avec succès !")
+                st.rerun()
+
+        st.divider()
+        
+        # Affichage de la liste des projets
+        projets_trouves = False
+        for proj in st.session_state.projets_list:
+            if recherche.lower() in proj['nom'].lower() or not recherche:
+                projets_trouves = True
+                st.markdown(f"""
+                <div class="project-card">
+                    <h3 style="margin: 0; color: #ffffff;">💻 {proj['nom']}</h3>
+                    <p style="color: #a1a1aa; font-size: 0.85rem; margin-top: 5px;">Moteur : {proj['moteur']} | Statut : <span style="color: #3fb950;">{proj['statut']}</span></p>
+                </div>
+                """, unsafe_allow_html=True)
                 
-                # Simulation de calcul lourd avec numpy
-                matrix_a = np.random.rand(1000, 1000)
-                matrix_b = np.random.rand(1000, 1000)
-                _ = np.dot(matrix_a, matrix_b) # Calcul intensif
-                
-                time.sleep(0.6)
-                st.write("Rendu des ombres douces et de l'occlusion ambiante...")
-                time.sleep(0.4)
-                status.update(label="Benchmark terminé avec succès !", state="complete", expanded=False)
-            
-            # Calcul des performances simulées
-            fps_base = 240 if "1080p" in resolution else (144 if "1440p" in resolution else 60)
-            fps_estime = int(fps_base * (st.session_state.gpu_power / 100) * (300 / rayons_millions))
-            
-            m1, m2, m3 = st.columns(3)
-            m1.metric("FPS Estimés", f"{max(30, fps_estime)} FPS")
-            m2.metric("Charge Mémoire VRAM", f"{round(rayons_millions * 0.08, 1)} GB")
-            m3.metric("Efficacité Énergétique", f"{round(rayons_millions * 1.4, 1)} Watts")
-            
-            if fps_estime > 120:
-                st.success("🔥 Performance de classe Enthusiaste / Concurrence Nvidia validée.")
-            else:
-                st.warning("⚠️ La charge dépasse les capacités actuelles. Augmente la puissance du GPU dans le gestionnaire !")
+                if st.button(f"Lancer l'éditeur pour {proj['nom']}", key=f"launch_{proj['nom']}"):
+                    with st.status(f"Lancement de l'environnement pour {proj['nom']}...", expanded=True) as status:
+                        st.write("Chargement des bibliothèques d'algèbre linéaire...")
+                        time.sleep(0.8)
+                        st.write("Allocation des registres CUDA virtuels...")
+                        time.sleep(0.8)
+                        status.update(label=f"🚀 {proj['nom']} est prêt !", state="complete", expanded=False)
+                    st.balloons()
+                    st.success("Session de développement active.")
+        
+        if not projets_trouves:
+            st.info("Aucun projet trouvé sur cet appareil correspondant à votre recherche.")
 
-    with col2:
-        st.subheader("⚙️ Overclocking Virtuel")
-        st.session_state.gpu_power = st.slider("Puissance du Core (TFLOPS)", 50, 500, st.session_state.gpu_power)
-        st.info(f"Fréquence processeur allouée : **{st.session_state.gpu_power * 25} MHz**")
-        if st.session_state.gpu_power > 350:
-            st.error("🚨 Alerte thermique : Risque de surchauffe du silicium virtuel !")
+    elif sub_tab == "Outils":
+        st.markdown("## Outils de Compilation")
+        st.write("Gérez vos kits de développement C++, Python et vos compilateurs CUDA.")
+        st.success("🟢 Compilateur Emala GCC v14.2 prêt.")
 
-# ==========================================
-# 2. MOTEUR DE JEU & PHYSIQUE
-# ==========================================
-elif menu == "Moteur de Jeu & Physique":
-    st.title("⚙️ Emala Physics Engine Sandbox")
-    st.markdown("Testez les paramètres physiques du moteur de jeu en temps réel.")
-    
-    gravite = st.slider("Constante de Gravité (m/s²)", 0.0, 20.0, 9.81)
-    vitesse_simulation = st.slider("Vitesse du temps de simulation", 0.1, 5.0, 1.0)
-    
-    # Graphique de trajectoire balistique calculée
-    t = np.linspace(0, 5, 100)
-    y_pos = 100 - 0.5 * gravite * (t ** 2) * vitesse_simulation
-    y_pos = np.maximum(y_pos, 0)
-    
-    chart_data = pd.DataFrame({"Temps": t, "Hauteur de l'objet (m)": y_pos})
-    st.line_chart(chart_data, x="Temps", y="Hauteur de l'objet (m)", color="#00ffcc")
+    elif sub_tab == "Fab":
+        st.markdown("## Fab — Place de marché 3D & Shaders")
+        st.write("Téléchargez des textures haute résolution et des modèles de réseaux de neurones pré-entraînés.")
 
-# ==========================================
-# 3. STORE AVANCÉ
-# ==========================================
-elif menu == "Store Avancé":
-    st.title("🛒 Emala Quantum Store & SDK")
-    st.markdown("Plateforme de déploiement de jeux AAA propulsés par le cloud.")
-    
-    jeux = {
-        "Cyber-Engine Core 2077": {"genre": "RPG Open World", "fps_requis": 60, "desc": "Moteur graphique entièrement géré par réseaux de neurones."},
-        "Quantum Strikers": {"genre": "FPS eSport", "fps_requis": 144, "desc": "Jeu de tir compétitif à faible latence quantique."},
-        "DeepTech Simulator": {"genre": "Gestion / Stratégie", "fps_requis": 30, "desc": "Concevez des puces et battez les monopoles mondiaux."}
-    }
-    
-    for nom, info in jeux.items():
-        with st.container():
-            st.markdown(f"""
-            <div class="metric-card">
-                <h3>{nom}</h3>
-                <p><b>Genre :</b> {info['genre']} | <b>FPS Requis :</b> {info['fps_requis']} FPS</p>
-                <p>{info['desc']}</p>
-            </div>
-            """, unsafe_allow_html=True)
-            if nom in st.session_state.library:
-                st.success("✅ Installé et prêt à l'exécution")
-            else:
-                if st.button(f"Installer {nom}", key=f"inst_{nom}"):
-                    st.session_state.library.append(nom)
-                    st.rerun()
-            st.write("")
+    elif sub_tab == "Apprendre":
+        st.markdown("## Apprendre — Tutoriels Deep-Tech")
+        st.info("Découvrez comment coder des moteurs graphiques et optimiser le calcul matriciel.")
 
-# ==========================================
-# 4. CLOUD NODE MANAGER
-# ==========================================
-elif menu == "Cloud Node Manager":
-    st.title("🌐 Gestionnaire de Nœuds Cloud")
-    st.markdown("État des serveurs de streaming de jeux et de calcul.")
+with col_social:
+    # Panneau Social latéral (exactement comme sur ton image Epic Games)
+    st.markdown("""
+    <div class="social-panel">
+        <h3 style="margin-top: 0; font-size: 1.1rem;">👥 Panneau social</h3>
+        <p style="font-size: 0.75rem; color: #a1a1aa;">Groupe : Sur invitation 🔒<br>Signalement activé</p>
+        <hr style="border-color: #27272a;">
+        <b style="font-size: 0.85rem; color: #0078f2;">Mon profil :</b><br>
+        🟢 <b>Emala!</b> (En ligne)<br><br>
+        <hr style="border-color: #27272a;">
+        <b style="font-size: 0.85rem;">Conversations rejoignables :</b><br>
+        🟢 <b>Alex_Dev</b><br>
+        <span style="font-size: 0.75rem; color: #3fb950;">Rejoignable • Benchmark GPU</span><br><br>
+        🟢 <b>NvidiaFan99</b><br>
+        <span style="font-size: 0.75rem; color: #3fb950;">Rejoignable • Simulation Python</span><br><br>
+        <hr style="border-color: #27272a;">
+        <b style="font-size: 0.85rem;">Invitations (1) :</b><br>
+        <span style="font-size: 0.8rem; color: #e11d48;"><b>P1XUL.era</b> vous invite à rejoindre son groupe !</span>
+    </div>
+    """, unsafe_allow_html=True)
     
-    nodes = {"Paris-Alpha": "🟢 En Ligne (Latence: 12ms)", "Tokyo-Core": "🟢 En Ligne (Latence: 94ms)", "Silicon-Valley-X": "🟡 Maintenance (Mise à jour puces)"}
-    for node, statut in nodes.items():
-        st.markdown(f"**{node}** : {statut}")
+    st.write("")
+    if st.button("💬 Ouvrir les Chats", use_container_width=True):
+        st.toast("Canal de discussion chiffré ouvert.")
+
+# --- BARRE DE BAS DE PAGE ---
+st.divider()
+st.caption("🟢 Statut du système : Connecté au Cloud Global Emala | Téléchargements : 0 ko/s | Version Launcher 2.6.0")
