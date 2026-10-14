@@ -1,15 +1,18 @@
 import streamlit as st
-import streamlit.components.v1 as components
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+import time
 
 # --- CONFIGURATION PAGE ---
 st.set_page_config(
-    page_title="Emala Launcher Pro",
-    page_icon="🎮",
+    page_title="Emala Game Engine Studio",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- STYLE CSS EPIC GAMES / DARK MODE ---
+# --- STYLE CSS EPIC GAMES / UNREAL ENGINE ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -22,222 +25,111 @@ st.markdown("""
         padding: 16px;
         margin-bottom: 12px;
     }
+    .social-panel {
+        background-color: #18181b;
+        border: 1px solid #27272a;
+        border-radius: 10px;
+        padding: 15px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- SESSION STATE ---
-if "playing" not in st.session_state:
-    st.session_state.playing = None
-
-# --- NAVIGATION SUPÉRIEURE ---
-t1, t2, t3, t4 = st.columns([1, 1, 1, 5])
+# --- NAVIGATION SUPÉRIEURE (STYLE LAUNCHER PRO) ---
+t1, t2, t3, t4, t5 = st.columns([1, 1, 1, 1, 4])
 with t1:
     st.markdown("### 🛒 Boutique")
 with t2:
     st.markdown("### 📚 Bibliothèque")
 with t3:
-    st.markdown("### 🚀 **Développer**")
+    st.markdown("### ⚙️ **Moteur Studio**")
 with t4:
-    st.caption("Emala Launcher v3.1 • Mode Jeu Actif")
+    st.markdown("### 🌐 Communauté")
+with t5:
+    st.caption("Emala Engine v4.0 • Studio Pro Actif")
 
 st.divider()
 
-if st.session_state.playing:
-    col_back, col_title = st.columns([1, 5])
-    with col_back:
-        if st.button("⬅ Quitter le jeu"):
-            st.session_state.playing = None
-            st.rerun()
-    with col_title:
-        st.markdown(f"## 🎮 En cours de partie : {st.session_state.playing}")
+# --- LAYOUT PRINCIPAL : WORKSPACE (GAUCHE) & PANNEAU SOCIAL (DROITE) ---
+col_workspace, col_social = st.columns([3, 1])
+
+with col_workspace:
+    st.markdown("## 🔬 Laboratoire de Physique & Trajectoire 3D")
+    st.markdown("Simulateur de moteur physique en temps réel (Calculs vectoriels et cinématiques).")
     
     st.divider()
 
-    # --- CODE DU JEU ROBUSTE AVEC FOCUS ACTIF ---
-    arcade_game_html = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>
-            body {
-                background-color: #05070b;
-                color: #00ffcc;
-                text-align: center;
-                font-family: 'Inter', sans-serif;
-                margin: 0;
-                overflow: hidden;
-            }
-            canvas {
-                background: #0b0e14;
-                border: 2px solid #00ffcc;
-                border-radius: 10px;
-                box-shadow: 0 0 20px rgba(0,255,204,0.3);
-                cursor: pointer;
-            }
-            #info {
-                font-size: 16px;
-                font-weight: bold;
-                margin-bottom: 8px;
-                color: #ffffff;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="info">Score : <span id="points">0</span> | <span id="status" style="color: #00ffcc;">Cliquez sur l'écran pour activer le jeu !</span></div>
-        <canvas id="gameCanvas" width="700" height="380"></canvas>
-        <script>
-            const canvas = document.getElementById("gameCanvas");
-            const ctx = canvas.getContext("2d");
+    # Contrôles du moteur physique
+    c1, c2, c3 = st.columns(3)
+    vitesse_initiale = c1.slider("Vitesse Initiale (m/s)", 10, 100, 50)
+    angle_tir = c2.slider("Angle de Tir (Degrés)", 10, 80, 45)
+    gravite = c3.slider("Gravité (m/s²)", 1.0, 20.0, 9.81)
 
-            let player = { x: 325, y: 320, width: 50, height: 20, color: "#00ffcc", speed: 8 };
-            let obstacles = [];
-            let score = 0;
-            let gameOver = false;
-            let gameStarted = false;
-            let keys = {};
+    # Calculs mathématiques de la trajectoire balistique avec NumPy
+    g = gravite
+    theta = np.radians(angle_tir)
+    v0 = vitesse_initiale
 
-            // Activation au clic de l'utilisateur pour contourner le blocage iframe
-            canvas.addEventListener("click", () => {
-                if (!gameStarted) {
-                    gameStarted = true;
-                    document.getElementById("status").innerText = "Utilisez les flèches GAUCHE / DROITE pour esquiver !";
-                    loop();
-                }
-            });
+    # Temps de vol total
+    t_vol = (2 * v0 * np.sin(theta)) / g
+    t = np.linspace(0, t_vol, num=200)
 
-            window.addEventListener("keydown", (e) => {
-                if(["ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault();
-                keys[e.key] = true;
-            });
-            window.addEventListener("keyup", (e) => keys[e.key] = false);
+    # Équations horaires de la balistique
+    x = v0 * np.cos(theta) * t
+    y = v0 * np.sin(theta) * t - 0.5 * g * (t ** 2)
+    y = np.maximum(y, 0) # Empêche de passer sous le sol
 
-            function spawnObstacle() {
-                if (Math.random() < 0.04) {
-                    obstacles.push({
-                        x: Math.random() * (canvas.width - 40),
-                        y: -40,
-                        width: 40,
-                        height: 40,
-                        speed: 4 + Math.random() * 4,
-                        color: "#ff0055"
-                    });
-                }
-            }
+    # Affichage des métriques clés
+    portee_max = x[-1] if len(x) > 0 else 0
+    hauteur_max = (v0**2 * (np.sin(theta)**2)) / (2 * g)
 
-            function update() {
-                if (gameOver || !gameStarted) return;
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Portée Maximale", f"{round(portee_max, 2)} m")
+    m2.metric("Hauteur Atteinte", f"{round(hauteur_max, 2)} m")
+    m3.metric("Temps de Vol", f"{round(t_vol, 2)} s")
 
-                if (keys["ArrowLeft"] && player.x > 0) player.x -= player.speed;
-                if (keys["ArrowRight"] && player.x < canvas.width - player.width) player.x += player.speed;
+    # Graphique interactif Plotly ultra fluide
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=x, y=y, mode='lines+markers',
+        name="Trajectoire du Projectile",
+        line=dict(color='#00ffcc', width=4)
+    ))
+    fig.update_layout(
+        title="Simulation Vectorielle en Direct",
+        template="plotly_dark",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(14,14,16,0.9)",
+        height=400,
+        xaxis_title="Distance horizontale (m)",
+        yaxis_title="Altitude (m)"
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
-                spawnObstacle();
+    if st.button("🚀 Compiler et Exécuter la Scène 3D", type="primary"):
+        with st.status("Compilation des shaders et des scripts C#...", expanded=True) as status:
+            st.write("Optimisation des matrices de collision...")
+            time.sleep(0.5)
+            st.write("Chargement des textures dans la VRAM...")
+            time.sleep(0.5)
+            status.update(label="Scène compilée et active avec succès !", state="complete", expanded=False)
+        st.success("Le moteur physique s'exécute à 240 FPS constants.")
 
-                for (let i = obstacles.length - 1; i >= 0; i--) {
-                    obstacles[i].y += obstacles[i].speed;
+with col_social:
+    # Panneau social latéral (Style Epic Games / Discord)
+    st.markdown("""
+    <div class="social-panel">
+        <h3 style="margin-top: 0; font-size: 1.1rem;">👥 Panneau social</h3>
+        <p style="font-size: 0.75rem; color: #a1a1aa;">Groupe : Session Studio 🔒</p>
+        <hr style="border-color: #27272a;">
+        🟢 <b>Emala!</b> (Développeur Principal)<br><br>
+        <b style="font-size: 0.85rem; color: #0078f2;">Membres du Studio :</b><br>
+        🟢 <b>Alex_Dev</b><br>
+        <span style="font-size: 0.75rem; color: #3fb950;">Édition de shaders</span><br><br>
+        🟢 <b>NvidiaEng</b><br>
+        <span style="font-size: 0.75rem; color: #3fb950;">Optimisation CUDA</span>
+    </div>
+    """, unsafe_allow_html=True)
 
-                    if (
-                        player.x < obstacles[i].x + obstacles[i].width &&
-                        player.x + player.width > obstacles[i].x &&
-                        player.y < obstacles[i].y + obstacles[i].height &&
-                        player.y + player.height > obstacles[i].y
-                    ) {
-                        gameOver = true;
-                    }
-
-                    if (obstacles[i].y > canvas.height) {
-                        obstacles.splice(i, 1);
-                        score += 10;
-                        document.getElementById("points").innerText = score;
-                    }
-                }
-            }
-
-            function draw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Dessin Joueur
-                ctx.fillStyle = player.color;
-                ctx.fillRect(player.x, player.y, player.width, player.height);
-
-                // Dessin Obstacles
-                for (let obs of obstacles) {
-                    ctx.fillStyle = obs.color;
-                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-                }
-
-                if (!gameStarted) {
-                    ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = "#00ffcc";
-                    ctx.font = "20px Inter";
-                    ctx.textAlign = "center";
-                    ctx.fillText("▶ CLIQUEZ ICI POUR LANCER LA PARTIE", canvas.width / 2, canvas.height / 2);
-                }
-
-                if (gameOver) {
-                    ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = "#ff0055";
-                    ctx.font = "30px Inter";
-                    ctx.textAlign = "center";
-                    ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 15);
-                    ctx.fillStyle = "#ffffff";
-                    ctx.font = "15px Inter";
-                    ctx.fillText("Cliquez sur 'Quitter le jeu' puis relancez pour rejouer", canvas.width / 2, canvas.height / 2 + 25);
-                }
-            }
-
-            // Affichage initial de l'écran d'accueil
-            draw();
-
-            function loop() {
-                update();
-                draw();
-                if (!gameOver) requestAnimationFrame(loop);
-            }
-        </script>
-        </body>
-        </html>
-        """
-        components.html(arcade_game_html, height=450)
-
-else:
-    col_workspace, col_social = st.columns([3, 1])
-
-    with col_workspace:
-        sub_tab = st.radio("Navigation", ["Bibliothèque", "Outils", "Projets"], horizontal=True, label_visibility="collapsed")
-        
-        if sub_tab == "Bibliothèque":
-            st.markdown("## 📚 Votre Bibliothèque de Jeux")
-            st.markdown("""
-            <div class="project-card">
-                <h3 style="margin: 0; color: #ffffff;">🚀 Cyber-Runner 2077</h3>
-                <p style="color: #a1a1aa; font-size: 0.9rem;">Moteur : Emala Engine 5.4 | Statut : Prêt à jouer</p>
-                <p style="color: #00ffcc; font-size: 0.85rem;">Esquivez les blocs rouges dans ce jeu d'arcade intégré !</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("▶ LANCER LE JEU", type="primary"):
-                st.session_state.playing = "Cyber-Runner 2077"
-                st.rerun()
-
-        elif sub_tab == "Outils":
-            st.markdown("## ⚙️ Compilateur & SDK")
-            st.success("🟢 Compilateur C++ et CUDA virtuels prêts.")
-
-        elif sub_tab == "Projets":
-            st.markdown("## 💻 Espace Développement")
-            st.info("Aucun projet en cours de compilation.")
-
-    with col_social:
-        st.markdown("""
-        <div style="background-color: #18181b; border: 1px solid #27272a; border-radius: 10px; padding: 15px;">
-            <h3 style="margin-top: 0; font-size: 1.1rem;">👥 Panneau social</h3>
-            <p style="font-size: 0.75rem; color: #a1a1aa;">Groupe : Public 🔓</p>
-            <hr style="border-color: #27272a;">
-            🟢 <b>Emala!</b> (En ligne)<br><br>
-            <b style="font-size: 0.85rem;">Amis en jeu :</b><br>
-            🟢 <b>Alex_Dev</b><br>
-            <span style="font-size: 0.75rem; color: #3fb950;">Joue à Cyber-Runner</span>
-        </div>
-        """, unsafe_allow_html=True)
+    st.write("")
+    if st.button("💬 Ouvrir le Chat Studio", use_container_width=True):
+        st.toast("Canal de discussion du studio ouvert.")
