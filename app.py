@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
 import time
 
 # --- CONFIGURATION PAGE ---
@@ -34,7 +33,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- NAVIGATION SUPÉRIEURE (STYLE LAUNCHER PRO) ---
+# --- NAVIGATION SUPÉRIEURE ---
 t1, t2, t3, t4, t5 = st.columns([1, 1, 1, 1, 4])
 with t1:
     st.markdown("### 🛒 Boutique")
@@ -45,11 +44,11 @@ with t3:
 with t4:
     st.markdown("### 🌐 Communauté")
 with t5:
-    st.caption("Emala Engine v4.0 • Studio Pro Actif")
+    st.caption("Emala Engine v4.1 • Studio Pro Actif")
 
 st.divider()
 
-# --- LAYOUT PRINCIPAL : WORKSPACE (GAUCHE) & PANNEAU SOCIAL (DROITE) ---
+# --- LAYOUT PRINCIPAL ---
 col_workspace, col_social = st.columns([3, 1])
 
 with col_workspace:
@@ -69,16 +68,13 @@ with col_workspace:
     theta = np.radians(angle_tir)
     v0 = vitesse_initiale
 
-    # Temps de vol total
     t_vol = (2 * v0 * np.sin(theta)) / g
-    t = np.linspace(0, t_vol, num=200)
+    t = np.linspace(0, t_vol, num=100)
 
-    # Équations horaires de la balistique
     x = v0 * np.cos(theta) * t
     y = v0 * np.sin(theta) * t - 0.5 * g * (t ** 2)
-    y = np.maximum(y, 0) # Empêche de passer sous le sol
+    y = np.maximum(y, 0)
 
-    # Affichage des métriques clés
     portee_max = x[-1] if len(x) > 0 else 0
     hauteur_max = (v0**2 * (np.sin(theta)**2)) / (2 * g)
 
@@ -87,35 +83,24 @@ with col_workspace:
     m2.metric("Hauteur Atteinte", f"{round(hauteur_max, 2)} m")
     m3.metric("Temps de Vol", f"{round(t_vol, 2)} s")
 
-    # Graphique interactif Plotly ultra fluide
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=x, y=y, mode='lines+markers',
-        name="Trajectoire du Projectile",
-        line=dict(color='#00ffcc', width=4)
-    ))
-    fig.update_layout(
-        title="Simulation Vectorielle en Direct",
-        template="plotly_dark",
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(14,14,16,0.9)",
-        height=400,
-        xaxis_title="Distance horizontale (m)",
-        yaxis_title="Altitude (m)"
-    )
-    st.plotly_chart(fig, use_container_width=True)
+    # Graphique natif Streamlit ultra fluide (zéro dépendance externe)
+    df_chart = pd.DataFrame({
+        "Distance (m)": x,
+        "Altitude (m)": y
+    }).set_index("Distance (m)")
+
+    st.line_chart(df_chart, height=400)
 
     if st.button("🚀 Compiler et Exécuter la Scène 3D", type="primary"):
         with st.status("Compilation des shaders et des scripts C#...", expanded=True) as status:
             st.write("Optimisation des matrices de collision...")
-            time.sleep(0.5)
+            time.sleep(0.4)
             st.write("Chargement des textures dans la VRAM...")
-            time.sleep(0.5)
+            time.sleep(0.4)
             status.update(label="Scène compilée et active avec succès !", state="complete", expanded=False)
         st.success("Le moteur physique s'exécute à 240 FPS constants.")
 
 with col_social:
-    # Panneau social latéral (Style Epic Games / Discord)
     st.markdown("""
     <div class="social-panel">
         <h3 style="margin-top: 0; font-size: 1.1rem;">👥 Panneau social</h3>
