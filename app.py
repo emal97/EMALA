@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 # --- CONFIGURATION PAGE ---
 st.set_page_config(
     page_title="Emala Launcher Pro",
-    page_icon="",
+    page_icon="🎮",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -29,9 +29,6 @@ st.markdown("""
 if "playing" not in st.session_state:
     st.session_state.playing = None
 
-if "library" not in st.session_state:
-    st.session_state.library = ["Cyber-Runner 2077"]
-
 # --- NAVIGATION SUPÉRIEURE ---
 t1, t2, t3, t4 = st.columns([1, 1, 1, 5])
 with t1:
@@ -41,11 +38,10 @@ with t2:
 with t3:
     st.markdown("### 🚀 **Développer**")
 with t4:
-    st.caption("Emala Launcher v3.0 • Mode Jeu Actif")
+    st.caption("Emala Launcher v3.1 • Mode Jeu Actif")
 
 st.divider()
 
-# Si un jeu est lancé, on affiche le lecteur de jeu en plein écran dans l'app
 if st.session_state.playing:
     col_back, col_title = st.columns([1, 5])
     with col_back:
@@ -57,7 +53,7 @@ if st.session_state.playing:
     
     st.divider()
 
-    # --- CODE DU JEU INTÉGRÉ (HTML5 / JAVASCRIPT JOUABLE) ---
+    # --- CODE DU JEU ROBUSTE AVEC FOCUS ACTIF ---
     arcade_game_html = """
     <!DOCTYPE html>
     <html>
@@ -76,32 +72,47 @@ if st.session_state.playing:
                 border: 2px solid #00ffcc;
                 border-radius: 10px;
                 box-shadow: 0 0 20px rgba(0,255,204,0.3);
+                cursor: pointer;
             }
-            #score {
-                font-size: 20px;
+            #info {
+                font-size: 16px;
                 font-weight: bold;
-                margin-bottom: 10px;
+                margin-bottom: 8px;
+                color: #ffffff;
             }
         </style>
     </head>
     <body>
-        <div id="score">Score : <span id="points">0</span> | Utilisez les flèches GAUCHE / DROITE pour esquiver !</div>
-        <canvas id="gameCanvas" width="700" height="400"></canvas>
+        <div id="info">Score : <span id="points">0</span> | <span id="status" style="color: #00ffcc;">Cliquez sur l'écran pour activer le jeu !</span></div>
+        <canvas id="gameCanvas" width="700" height="380"></canvas>
         <script>
             const canvas = document.getElementById("gameCanvas");
             const ctx = canvas.getContext("2d");
 
-            let player = { x: 325, y: 340, width: 50, height: 20, color: "#00ffcc", speed: 8 };
+            let player = { x: 325, y: 320, width: 50, height: 20, color: "#00ffcc", speed: 8 };
             let obstacles = [];
             let score = 0;
             let gameOver = false;
+            let gameStarted = false;
             let keys = {};
 
-            window.addEventListener("keydown", (e) => keys[e.key] = true);
+            // Activation au clic de l'utilisateur pour contourner le blocage iframe
+            canvas.addEventListener("click", () => {
+                if (!gameStarted) {
+                    gameStarted = true;
+                    document.getElementById("status").innerText = "Utilisez les flèches GAUCHE / DROITE pour esquiver !";
+                    loop();
+                }
+            });
+
+            window.addEventListener("keydown", (e) => {
+                if(["ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault();
+                keys[e.key] = true;
+            });
             window.addEventListener("keyup", (e) => keys[e.key] = false);
 
             function spawnObstacle() {
-                if (Math.random() < 0.03) {
+                if (Math.random() < 0.04) {
                     obstacles.push({
                         x: Math.random() * (canvas.width - 40),
                         y: -40,
@@ -114,19 +125,16 @@ if st.session_state.playing:
             }
 
             function update() {
-                if (gameOver) return;
+                if (gameOver || !gameStarted) return;
 
-                // Mouvements joueur
                 if (keys["ArrowLeft"] && player.x > 0) player.x -= player.speed;
                 if (keys["ArrowRight"] && player.x < canvas.width - player.width) player.x += player.speed;
 
                 spawnObstacle();
 
-                // Mouvements obstacles
                 for (let i = obstacles.length - 1; i >= 0; i--) {
                     obstacles[i].y += obstacles[i].speed;
 
-                    // Collision
                     if (
                         player.x < obstacles[i].x + obstacles[i].width &&
                         player.x + player.width > obstacles[i].x &&
@@ -136,7 +144,6 @@ if st.session_state.playing:
                         gameOver = true;
                     }
 
-                    // Sortie d'écran
                     if (obstacles[i].y > canvas.height) {
                         obstacles.splice(i, 1);
                         score += 10;
@@ -158,48 +165,55 @@ if st.session_state.playing:
                     ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
                 }
 
+                if (!gameStarted) {
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "#00ffcc";
+                    ctx.font = "20px Inter";
+                    ctx.textAlign = "center";
+                    ctx.fillText("▶ CLIQUEZ ICI POUR LANCER LA PARTIE", canvas.width / 2, canvas.height / 2);
+                }
+
                 if (gameOver) {
-                    ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                     ctx.fillStyle = "#ff0055";
                     ctx.font = "30px Inter";
                     ctx.textAlign = "center";
-                    ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 10);
+                    ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 15);
                     ctx.fillStyle = "#ffffff";
-                    ctx.font = "16px Inter";
-                    ctx.fillText("Appuyez sur F5 pour rejouer", canvas.width / 2, canvas.height / 2 + 30);
+                    ctx.font = "15px Inter";
+                    ctx.fillText("Cliquez sur 'Quitter le jeu' puis relancez pour rejouer", canvas.width / 2, canvas.height / 2 + 25);
                 }
             }
+
+            // Affichage initial de l'écran d'accueil
+            draw();
 
             function loop() {
                 update();
                 draw();
                 if (!gameOver) requestAnimationFrame(loop);
             }
-
-            loop();
-        </style>
-    </body>
-    </html>
-    """
-    components.html(arcade_game_html, height=480)
+        </script>
+        </body>
+        </html>
+        """
+        components.html(arcade_game_html, height=450)
 
 else:
-    # --- INTERFACE NORMALE DU LAUNCHER ---
     col_workspace, col_social = st.columns([3, 1])
 
     with col_workspace:
         sub_tab = st.radio("Navigation", ["Bibliothèque", "Outils", "Projets"], horizontal=True, label_visibility="collapsed")
         
         if sub_tab == "Bibliothèque":
-            st.markdown("##  Votre Bibliothèque de Jeux")
-            
-            # Carte du jeu jouable
+            st.markdown("## 📚 Votre Bibliothèque de Jeux")
             st.markdown("""
             <div class="project-card">
-                <h3 style="margin: 0; color: #ffffff;"> Cyber-Runner 2077</h3>
+                <h3 style="margin: 0; color: #ffffff;">🚀 Cyber-Runner 2077</h3>
                 <p style="color: #a1a1aa; font-size: 0.9rem;">Moteur : Emala Engine 5.4 | Statut : Prêt à jouer</p>
-                <p style="color: #00ffcc; font-size: 0.85rem;">Esquivez les blocs rouges le plus longtemps possible dans ce jeu d'arcade intégré !</p>
+                <p style="color: #00ffcc; font-size: 0.85rem;">Esquivez les blocs rouges dans ce jeu d'arcade intégré !</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -208,22 +222,22 @@ else:
                 st.rerun()
 
         elif sub_tab == "Outils":
-            st.markdown("##  Compilateur & SDK")
-            st.success(" Compilateur C++ et CUDA virtuels prêts.")
+            st.markdown("## ⚙️ Compilateur & SDK")
+            st.success("🟢 Compilateur C++ et CUDA virtuels prêts.")
 
         elif sub_tab == "Projets":
-            st.markdown("##  Espace Développement")
+            st.markdown("## 💻 Espace Développement")
             st.info("Aucun projet en cours de compilation.")
 
     with col_social:
         st.markdown("""
         <div style="background-color: #18181b; border: 1px solid #27272a; border-radius: 10px; padding: 15px;">
-            <h3 style="margin-top: 0; font-size: 1.1rem;"> Panneau social</h3>
-            <p style="font-size: 0.75rem; color: #a1a1aa;">Groupe : Public </p>
+            <h3 style="margin-top: 0; font-size: 1.1rem;">👥 Panneau social</h3>
+            <p style="font-size: 0.75rem; color: #a1a1aa;">Groupe : Public 🔓</p>
             <hr style="border-color: #27272a;">
-             <b>Emala!</b> (En ligne)<br><br>
+            🟢 <b>Emala!</b> (En ligne)<br><br>
             <b style="font-size: 0.85rem;">Amis en jeu :</b><br>
-             <b>Alex_Dev</b><br>
+            🟢 <b>Alex_Dev</b><br>
             <span style="font-size: 0.75rem; color: #3fb950;">Joue à Cyber-Runner</span>
         </div>
         """, unsafe_allow_html=True)
