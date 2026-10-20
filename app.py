@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import time
 
-# --- CONFIGURATION PAGE ---
+
 st.set_page_config(
     page_title="Emala Game Engine Studio",
     page_icon="",
@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- STYLE CSS EPIC GAMES / UNREAL ENGINE ---
+
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -33,7 +33,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- NAVIGATION SUPÉRIEURE ---
+
 t1, t2, t3, t4, t5 = st.columns([1, 1, 1, 1, 4])
 with t1:
     st.markdown("###  Boutique")
@@ -48,7 +48,7 @@ with t5:
 
 st.divider()
 
-# --- LAYOUT PRINCIPAL ---
+
 col_workspace, col_social = st.columns([3, 1])
 
 with col_workspace:
@@ -57,13 +57,13 @@ with col_workspace:
     
     st.divider()
 
-    # Contrôles du moteur physique
+
     c1, c2, c3 = st.columns(3)
     vitesse_initiale = c1.slider("Vitesse Initiale (m/s)", 10, 100, 50)
     angle_tir = c2.slider("Angle de Tir (Degrés)", 10, 80, 45)
     gravite = c3.slider("Gravité (m/s²)", 1.0, 20.0, 9.81)
 
-    # Calculs mathématiques de la trajectoire balistique avec NumPy
+    
     g = gravite
     theta = np.radians(angle_tir)
     v0 = vitesse_initiale
@@ -83,7 +83,7 @@ with col_workspace:
     m2.metric("Hauteur Atteinte", f"{round(hauteur_max, 2)} m")
     m3.metric("Temps de Vol", f"{round(t_vol, 2)} s")
 
-    # Graphique natif Streamlit ultra fluide (zéro dépendance externe)
+
     df_chart = pd.DataFrame({
         "Distance (m)": x,
         "Altitude (m)": y
