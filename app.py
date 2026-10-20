@@ -6,7 +6,7 @@ import time
 # --- CONFIGURATION PAGE ---
 st.set_page_config(
     page_title="Emala Game Engine Studio",
-    page_icon="⚡",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -36,13 +36,13 @@ st.markdown("""
 # --- NAVIGATION SUPÉRIEURE ---
 t1, t2, t3, t4, t5 = st.columns([1, 1, 1, 1, 4])
 with t1:
-    st.markdown("### 🛒 Boutique")
+    st.markdown("###  Boutique")
 with t2:
-    st.markdown("### 📚 Bibliothèque")
+    st.markdown("###  Bibliothèque")
 with t3:
-    st.markdown("### ⚙️ **Moteur Studio**")
+    st.markdown("###  **Moteur Studio**")
 with t4:
-    st.markdown("### 🌐 Communauté")
+    st.markdown("###  Communauté")
 with t5:
     st.caption("Emala Engine v4.1 • Studio Pro Actif")
 
@@ -52,7 +52,7 @@ st.divider()
 col_workspace, col_social = st.columns([3, 1])
 
 with col_workspace:
-    st.markdown("## 🔬 Laboratoire de Physique & Trajectoire 3D")
+    st.markdown("##  Laboratoire de Physique & Trajectoire 3D")
     st.markdown("Simulateur de moteur physique en temps réel (Calculs vectoriels et cinématiques).")
     
     st.divider()
@@ -91,7 +91,7 @@ with col_workspace:
 
     st.line_chart(df_chart, height=400)
 
-    if st.button("🚀 Compiler et Exécuter la Scène 3D", type="primary"):
+    if st.button(" Compiler et Exécuter la Scène 3D", type="primary"):
         with st.status("Compilation des shaders et des scripts C#...", expanded=True) as status:
             st.write("Optimisation des matrices de collision...")
             time.sleep(0.4)
@@ -103,18 +103,18 @@ with col_workspace:
 with col_social:
     st.markdown("""
     <div class="social-panel">
-        <h3 style="margin-top: 0; font-size: 1.1rem;">👥 Panneau social</h3>
-        <p style="font-size: 0.75rem; color: #a1a1aa;">Groupe : Session Studio 🔒</p>
+        <h3 style="margin-top: 0; font-size: 1.1rem;"> Panneau social</h3>
+        <p style="font-size: 0.75rem; color: #a1a1aa;">Groupe : Session Studio </p>
         <hr style="border-color: #27272a;">
-        🟢 <b>Emala!</b> (Développeur Principal)<br><br>
+         <b>Emala!</b> (Développeur Principal)<br><br>
         <b style="font-size: 0.85rem; color: #0078f2;">Membres du Studio :</b><br>
-        🟢 <b>Alex_Dev</b><br>
+         <b>Alex_Dev</b><br>
         <span style="font-size: 0.75rem; color: #3fb950;">Édition de shaders</span><br><br>
-        🟢 <b>NvidiaEng</b><br>
+         <b>NvidiaEng</b><br>
         <span style="font-size: 0.75rem; color: #3fb950;">Optimisation CUDA</span>
     </div>
     """, unsafe_allow_html=True)
 
     st.write("")
-    if st.button("💬 Ouvrir le Chat Studio", use_container_width=True):
+    if st.button(" Ouvrir le Chat Studio", use_container_width=True):
         st.toast("Canal de discussion du studio ouvert.")
